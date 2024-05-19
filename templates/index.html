@@ -6,36 +6,63 @@
         body { font-family: Arial, sans-serif; margin: 40px; }
         .citation { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
         .citation p { margin: 0; }
+        #refresh { margin-bottom: 20px; padding: 10px; cursor: pointer; }
+        #save { margin-bottom: 20px; padding: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
     <h1>Citations</h1>
+    <button id="refresh">Refresh</button>
+    <button id="save">Save</button>
     <div id="citations"></div>
 
     <script>
-        fetch('/citations')
+        function fetchCitations() {
+            fetch('/citations')
+                .then(response => response.json())
+                .then(data => {
+                    const citationsContainer = document.getElementById('citations');
+                    citationsContainer.innerHTML = '';  // Clear existing content
+                    data.forEach(citation => {
+                        const citationDiv = document.createElement('div');
+                        citationDiv.className = 'citation';
+
+                        citation.citations.forEach(source => {
+                            const sourcePara = document.createElement('p');
+                            sourcePara.innerHTML = `ID: ${source.id} - Link: <a href="${source.link || '#'}">${source.link || 'No link'}</a>`;
+                            citationDiv.appendChild(sourcePara);
+                        });
+
+                        citationsContainer.appendChild(citationDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching citations:', error);
+                });
+        }
+
+        function saveCitations() {
+            fetch('/save', {
+                method: 'POST'
+            })
             .then(response => response.json())
             .then(data => {
-                const citationsContainer = document.getElementById('citations');
-                data.forEach(item => {
-                    const citationDiv = document.createElement('div');
-                    citationDiv.className = 'citation';
-
-                    const idPara = document.createElement('p');
-                    idPara.innerText = `ID: ${item.id}`;
-                    citationDiv.appendChild(idPara);
-
-                    const sourcesList = document.createElement('ul');
-                    item.citations.forEach(source => {
-                        const sourceItem = document.createElement('li');
-                        sourceItem.innerHTML = `Link: <a href="${source.link}">${source.link}</a>`;
-                        sourcesList.appendChild(sourceItem);
-                    });
-                    citationDiv.appendChild(sourcesList);
-
-                    citationsContainer.appendChild(citationDiv);
-                });
+                if (data.status === 'success') {
+                    alert('Data saved successfully!');
+                } else {
+                    alert('Failed to save data.');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving citations:', error);
             });
+        }
+
+        document.getElementById('refresh').addEventListener('click', fetchCitations);
+        document.getElementById('save').addEventListener('click', saveCitations);
+
+        // Fetch citations on initial load
+        fetchCitations();
     </script>
 </body>
 </html>

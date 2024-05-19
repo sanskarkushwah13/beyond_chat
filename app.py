@@ -18,7 +18,7 @@ example_input = [
         "response": "Yes, we offer online delivery services through major platforms like Swiggy and Zomato. You can also reserve a table directly from our website if you are planning to have breakfast!",
         "sources": [
             {
-                "id": "71",
+                "id": "51",
                 "context": "Order online Thank you for your trust in us! We are available on all major platforms like zomato, swiggy. You can also order directly from our website",
                 "link": "https://orders.brikoven.com"
             },
@@ -64,10 +64,19 @@ def find_citations(data):
         })
     return citations
 
+def save_to_json(data, filename='data.json'):
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)
+
+# Fetch, process, and save the data
+citations_data = find_citations(example_input)
+save_to_json(citations_data)
+
 @app.route('/citations', methods=['GET'])
 def get_citations():
-    citations = find_citations(example_input)
-    return jsonify(citations)
+    with open('data.json', 'r') as f:
+        citations = json.load(f)
+    return jsonify(citations[:10])
 
 @app.route('/')
 def index():
