@@ -4,8 +4,10 @@
     <title>Citations</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
-        .citation { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
-        .citation p { margin: 0; }
+        table { width: 100%; border-collapse: collapse; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 15px; text-align: left; }
+        th { background-color: #f2f2f2; }
         #refresh { margin-bottom: 20px; padding: 10px; cursor: pointer; }
         #save { margin-bottom: 20px; padding: 10px; cursor: pointer; }
     </style>
@@ -14,26 +16,39 @@
     <h1>Citations</h1>
     <button id="refresh">Refresh</button>
     <button id="save">Save</button>
-    <div id="citations"></div>
+    <table id="citationsTable">
+        <thead>
+            <tr>
+                <th>Source ID</th>
+                <th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 
     <script>
         function fetchCitations() {
             fetch('/citations')
                 .then(response => response.json())
                 .then(data => {
-                    const citationsContainer = document.getElementById('citations');
-                    citationsContainer.innerHTML = '';  // Clear existing content
+                    const tableBody = document.querySelector('#citationsTable tbody');
+                    tableBody.innerHTML = '';  // Clear existing content
                     data.forEach(citation => {
-                        const citationDiv = document.createElement('div');
-                        citationDiv.className = 'citation';
-
                         citation.citations.forEach(source => {
-                            const sourcePara = document.createElement('p');
-                            sourcePara.innerHTML = `ID: ${source.id} - Link: <a href="${source.link || '#'}">${source.link || 'No link'}</a>`;
-                            citationDiv.appendChild(sourcePara);
-                        });
+                            const row = document.createElement('tr');
 
-                        citationsContainer.appendChild(citationDiv);
+                            const idCell = document.createElement('td');
+                            idCell.textContent = source.id;
+                            row.appendChild(idCell);
+
+                            const linkCell = document.createElement('td');
+                            const link = source.link || 'No link';
+                            linkCell.innerHTML = `<a href="${link !== 'No link' ? link : '#'}">${link}</a>`;
+                            row.appendChild(linkCell);
+
+                            tableBody.appendChild(row);
+                        });
                     });
                 })
                 .catch(error => {
