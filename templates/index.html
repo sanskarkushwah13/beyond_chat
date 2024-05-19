@@ -8,17 +8,22 @@
         table, th, td { border: 1px solid black; }
         th, td { padding: 15px; text-align: left; }
         th { background-color: #f2f2f2; }
-        #refresh { margin-bottom: 20px; padding: 10px; cursor: pointer; }
-        #save { margin-bottom: 20px; padding: 10px; cursor: pointer; }
+        #refresh, #save { margin-bottom: 20px; padding: 10px; cursor: pointer; }
+        #banner { width: 100%; height: 300px; margin-bottom: 20px; background-color: #f2f2f2; display: flex; align-items: center; justify-content: center; }
+        #banner img { max-width: 100%; max-height: 100%; }
     </style>
 </head>
 <body>
     <h1>Citations</h1>
+    <div id="banner">
+        <img id="bannerImage" src="" alt="Banner Image">
+    </div>
     <button id="refresh">Refresh</button>
     <button id="save">Save</button>
     <table id="citationsTable">
         <thead>
             <tr>
+                <th>Response</th>
                 <th>Source ID</th>
                 <th>Link</th>
             </tr>
@@ -28,6 +33,16 @@
     </table>
 
     <script>
+        async function fetchBannerImage() {
+            try {
+                const response = await fetch('https://source.unsplash.com/random/1600x900');
+                const imageUrl = response.url;
+                document.getElementById('bannerImage').src = imageUrl;
+            } catch (error) {
+                console.error('Error fetching banner image:', error);
+            }
+        }
+
         function fetchCitations() {
             fetch('/citations')
                 .then(response => response.json())
@@ -37,47 +52,38 @@
                     data.forEach(citation => {
                         citation.citations.forEach(source => {
                             const row = document.createElement('tr');
-
+                            const responseCell = document.createElement('td');
+                            responseCell.textContent = citation.response;
                             const idCell = document.createElement('td');
                             idCell.textContent = source.id;
-                            row.appendChild(idCell);
-
                             const linkCell = document.createElement('td');
-                            const link = source.link || 'No link';
-                            linkCell.innerHTML = `<a href="${link !== 'No link' ? link : '#'}">${link}</a>`;
+                            if (source.link) {
+                                const link = document.createElement('a');
+                                link.href = source.link;
+                                link.textContent = source.link;
+                                linkCell.appendChild(link);
+                            }
+                            row.appendChild(responseCell);
+                            row.appendChild(idCell);
                             row.appendChild(linkCell);
-
                             tableBody.appendChild(row);
                         });
                     });
                 })
-                .catch(error => {
-                    console.error('Error fetching citations:', error);
-                });
-        }
-
-        function saveCitations() {
-            fetch('/save', {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Data saved successfully!');
-                } else {
-                    alert('Failed to save data.');
-                }
-            })
-            .catch(error => {
-                console.error('Error saving citations:', error);
-            });
+                .catch(error => console.error('Error fetching citations:', error));
         }
 
         document.getElementById('refresh').addEventListener('click', fetchCitations);
-        document.getElementById('save').addEventListener('click', saveCitations);
+        document.getElementById('save').addEventListener('click', () => {
+            fetch('/save', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => alert(data.status === 'success' ? 'Data saved successfully!' : 'Error saving data: ' + data.message))
+                .catch(error => console.error('Error saving data:', error));
+        });
 
-        // Fetch citations on initial load
+        // Fetch citations and banner image on page load
         fetchCitations();
+        fetchBannerImage();
     </script>
 </body>
 </html>
