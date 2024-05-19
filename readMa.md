@@ -26,7 +26,7 @@ This project is a Flask-based web application that fetches, processes, and displ
 ### Steps
 1. **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/citation-fetcher.git
+    git clone https://github.com/sanskarkushwah13/beyond_chat.git
     cd citation-fetcher
     ```
 
