@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Citations</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .citation { margin-bottom: 20px; padding: 10px; border: 1px solid #ccc; }
+        .citation p { margin: 0; }
+    </style>
+</head>
+<body>
+    <h1>Citations</h1>
+    <div id="citations"></div>
+
+    <script>
+        fetch('/citations')
+            .then(response => response.json())
+            .then(data => {
+                const citationsContainer = document.getElementById('citations');
+                data.forEach(item => {
+                    const citationDiv = document.createElement('div');
+                    citationDiv.className = 'citation';
+
+                    const idPara = document.createElement('p');
+                    idPara.innerText = `ID: ${item.id}`;
+                    citationDiv.appendChild(idPara);
+
+                    const sourcesList = document.createElement('ul');
+                    item.citations.forEach(source => {
+                        const sourceItem = document.createElement('li');
+                        sourceItem.innerHTML = `Link: <a href="${source.link}">${source.link}</a>`;
+                        sourcesList.appendChild(sourceItem);
+                    });
+                    citationDiv.appendChild(sourcesList);
+
+                    citationsContainer.appendChild(citationDiv);
+                });
+            });
+    </script>
+</body>
+</html>
